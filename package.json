@@ -1,0 +1,21 @@
+{
+  "name": "arseblog-gift-guide",
+  "version": "1.0.0",
+  "description": "Arseblog Christmas Gift Guide: paste a product link, get a gift card.",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:e2e": "node scripts/e2e.mjs"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.8",
+    "@netlify/cache": "^4.2.1",
+    "node-html-parser": "^9.0.7"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}

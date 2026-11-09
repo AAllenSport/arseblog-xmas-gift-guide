@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arseblog Christmas Gift Guide 2026</title>
+<meta name="description" content="Arsenal gifts picked by Arseblog: prints and art, bootleg and official merch, books and stocking fillers.">
+<meta property="og:title" content="The Arseblog Christmas Gift Guide 2026">
+<meta property="og:description" content="Arsenal gifts picked by Arseblog: prints and art, bootleg and official merch, books and stocking fillers.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#9e0005">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="64x64">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="masthead" id="top">
+  <div class="wrap">
+    <a class="crest-link" href="https://arseblog.com" aria-label="Arseblog home">
+      <picture><source srcset="/assets/brand/crest.webp" type="image/webp"><img class="crest" src="/assets/brand/crest.png" alt="Arseblog crest" width="410" height="480"></picture>
+    </a>
+    <div class="masthead-text">
+      <p class="brandline"><a href="https://arseblog.com">Arseblog</a><span aria-hidden="true">·</span>Christmas 2026</p>
+      <h1>The Arseblog Christmas Gift Guide</h1>
+      <p class="intro">Prints for the wall, bootleg tees, the good official stuff, books worth reading and small things for the stocking. Our first Christmas as champions since 2004, so treat someone properly.</p>
+    </div>
+  </div>
+</header>
+<nav class="secbar" aria-label="Gift sections"><div class="wrap" id="secbar"></div></nav>
+<main class="wrap" id="shelves" aria-live="polite"></main>
+<footer><div class="wrap">Every “Buy now” button goes straight to the shop. Prices were right when we added them and may have changed since.</div></footer>
+<script src="/assets/cards.js"></script>
+<script>
+(async () => {
+  const G = window.GiftGuide;
+  const shelves = document.getElementById("shelves");
+  const bar = document.getElementById("secbar");
+  G.renderBar(bar, []);
+  G.renderSkeleton(shelves);
+  try {
+    const res = await fetch("/api/items");
+    if (!res.ok) throw new Error();
+    const { items } = await res.json();
+    G.renderBar(bar, items);
+    G.renderShelves(shelves, items);
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+  } catch {
+    shelves.replaceChildren(G.el("p", { class: "notice", text: "The gift list didn't load. Refresh the page to try again." }));
+  }
+})();
+</script>
+</body>
+</html>

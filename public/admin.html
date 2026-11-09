@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gift Guide Admin · Arseblog</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#9e0005">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="64x64">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <a class="wordmark" href="/"><picture><source srcset="/assets/brand/crest.webp" type="image/webp"><img class="crest-sm" src="/assets/brand/crest.png" alt="" width="34" height="40"></picture><span>Arseblog<small>gift guide admin</small></span></a>
+    <div style="display:flex;gap:8px">
+      <a class="mast-link" href="/" target="_blank" rel="noopener">View guide ↗</a>
+      <button class="mast-link" id="signOut" type="button" hidden>Sign out</button>
+    </div>
+  </div>
+</header>
+
+<section class="wrap" id="loginView">
+  <form class="login" id="loginForm">
+    <h1>Editors only</h1>
+    <label class="hint" for="pw">Admin password</label>
+    <input class="field" id="pw" type="password" autocomplete="current-password" required>
+    <button class="btn red" type="submit" id="loginBtn">Sign in</button>
+    <p class="status" id="loginStatus" role="status"></p>
+  </form>
+</section>
+
+<div id="appView" hidden>
+  <section class="adder">
+    <div class="wrap">
+      <p class="label">Add a gift</p>
+      <form id="addForm">
+        <input class="field" id="addUrl" type="url" required placeholder="Paste the product link, e.g. https://www.cultkits.com/products/…" aria-label="Product link">
+        <select class="field" id="addSection" aria-label="Section"></select>
+        <button class="btn red" type="submit" id="addBtn">Fetch details</button>
+      </form>
+      <p class="hint">Paste a link from any shop. The name, photos, description, price and shop name are filled in for you to check before saving.</p>
+      <p class="status" id="addStatus" role="status"></p>
+    </div>
+  </section>
+  <nav class="secbar" aria-label="Gift sections"><div class="wrap" id="secbar"></div></nav>
+  <main class="wrap" id="shelves"></main>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <form class="sheet" id="sheet" aria-labelledby="sheetTitle" novalidate>
+    <h2 id="sheetTitle">New gift</h2>
+    <ul class="warnings" id="sheetWarnings" hidden></ul>
+    <div class="link-row">
+      <label>Product link<input class="field" id="fUrl" type="url" required></label>
+      <button class="btn ghost" type="button" id="refreshBtn">Refresh from link</button>
+    </div>
+    <label>Name<input class="field" id="fName" type="text" maxlength="160" required></label>
+    <div class="row">
+      <label>Shop<input class="field" id="fMerchant" type="text" maxlength="60"></label>
+      <label>Price<input class="field" id="fPrice" type="text" maxlength="30" placeholder="£24.99"></label>
+    </div>
+    <label>Section<select class="field" id="fSection"></select></label>
+    <label>Description<textarea class="field" id="fDesc" maxlength="600" placeholder="Two or three lines on why it's a good gift."></textarea></label>
+    <div class="drop" id="drop">
+      <div class="label" style="font-size:13px">Photos</div>
+      <div class="thumbs" id="thumbs"></div>
+      <div>Drag photos here, paste one, or <label class="choose" style="display:inline">choose files<input id="fFiles" type="file" accept="image/*" multiple hidden></label>. The starred photo is the cover.</div>
+      <div class="link-row">
+        <label style="font-weight:500">Or add a photo by web address<input class="field" id="fImgUrl" type="url" placeholder="https://…/photo.jpg"></label>
+        <button class="btn ghost" type="button" id="addImgUrl">Add</button>
+      </div>
+    </div>
+    <label class="check"><input id="fLive" type="checkbox"> Show on the guide</label>
+    <p class="status" id="sheetStatus" role="status"></p>
+    <div class="actions">
+      <button class="btn ghost" type="button" id="cancelBtn">Cancel</button>
+      <button class="btn red" type="submit" id="saveBtn">Save gift</button>
+    </div>
+  </form>
+</div>
+
+<script src="/assets/cards.js"></script>
+<script src="/assets/admin.js"></script>
+</body>
+</html>
