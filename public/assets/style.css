@@ -56,6 +56,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brandline { margin: 0; display: flex; gap: 10px; flex-wrap: wrap; font-family: var(--display); font-weight: 500; font-size: 16px; letter-spacing: .16em; text-transform: uppercase; opacity: .92; }
 .brandline a { text-decoration: none; font-weight: 700; }
 .brandline a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.brandline .countdown { display: inline-flex; gap: 10px; font-variant-numeric: tabular-nums; }
+.brandline .countdown[hidden] { display: none !important; }
 .masthead h1 { margin: 0; font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: clamp(38px, 6.6vw, 80px); line-height: .98; letter-spacing: .005em; text-wrap: balance; }
 .intro { margin: 0; max-width: 52rem; font-size: 17px; line-height: 1.55; text-wrap: pretty; }
 @media (max-width: 600px) {
@@ -120,7 +122,10 @@ main { padding-block: 8px 64px; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 
 footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
-footer .wrap { padding-block: 24px; display: grid; gap: 6px; }
+footer .wrap { padding-block: 28px 32px; display: grid; gap: 6px; }
+.signoff { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+.signoff img { display: block; width: 48px; height: 48px; border-radius: 6px; flex: none; }
+footer .signoff p { margin: 0; font-family: var(--display); font-weight: 600; font-size: clamp(20px, 2.6vw, 26px); line-height: 1.1; letter-spacing: .02em; text-transform: uppercase; color: var(--ink); max-width: none; text-wrap: balance; }
 footer p { margin: 0; max-width: 72ch; }
 footer .disclosure { color: var(--ink); font-weight: 600; }
 
