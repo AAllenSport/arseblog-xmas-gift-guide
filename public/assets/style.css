@@ -127,7 +127,7 @@ footer .wrap { padding-block: 28px 32px; display: grid; gap: 6px; }
 .signoff { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
 .signoff img { display: block; width: 48px; height: 48px; border-radius: 6px; flex: none; }
 footer .signoff p { margin: 0; font-family: var(--display); font-weight: 600; font-size: clamp(20px, 2.6vw, 26px); line-height: 1.1; letter-spacing: .02em; text-transform: uppercase; color: var(--ink); max-width: none; text-wrap: balance; }
-footer p { margin: 0; max-width: 72ch; }
+footer p { margin: 0; }
 footer .disclosure { color: var(--ink); font-weight: 600; }
 
 /* ---------- Admin ---------- */
