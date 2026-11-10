@@ -8,7 +8,17 @@
 <meta property="og:title" content="The Arseblog Christmas Gift Guide 2026">
 <meta property="og:description" content="Arsenal gifts picked by Arseblog: prints and art, bootleg and official merch, books and stocking fillers.">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Arseblog">
+<meta property="og:url" content="%SITE_URL%/">
+<meta property="og:image" content="%SITE_URL%/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Arseblog Christmas Gift Guide, with the Arseblog crest on a red background">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Arseblog Christmas Gift Guide 2026">
+<meta name="twitter:image" content="%SITE_URL%/og-image.jpg">
+<meta name="twitter:image:alt" content="The Arseblog Christmas Gift Guide, with the Arseblog crest on a red background">
+<link rel="canonical" href="%SITE_URL%/">
 <meta name="theme-color" content="#9e0005">
 <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64">
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
@@ -32,7 +42,12 @@
   </div>
 </header>
 <nav class="secbar" aria-label="Gift sections"><div class="wrap" id="secbar"></div></nav>
-<main class="wrap" id="shelves" aria-live="polite"></main>
+<div class="wrap budget" id="budget" role="group" aria-labelledby="budgetLabel">
+  <span class="budget-label" id="budgetLabel">Budget</span>
+  <div class="budget-options" id="budgetOptions"></div>
+  <p class="budget-result" id="budgetResult" aria-live="polite"></p>
+</div>
+<main class="wrap" id="shelves"></main>
 <footer>
   <div class="wrap">
     <p class="disclosure">This guide contains no affiliate or paid-for links. Nobody has paid to be included, and Arseblog earns nothing if you buy something.</p>
@@ -45,14 +60,50 @@
   const G = window.GiftGuide;
   const shelves = document.getElementById("shelves");
   const bar = document.getElementById("secbar");
+  const options = document.getElementById("budgetOptions");
+  const result = document.getElementById("budgetResult");
+  let items = [];
+  let band = "all";
+
+  function show() {
+    const visible = items.filter((it) => G.inBand(it, band));
+    G.renderBar(bar, visible);
+    G.renderShelves(shelves, visible, { emptyText: band === "all" ? "More picks landing soon." : "Nothing at this price in this section yet." });
+    for (const b of options.children) b.setAttribute("aria-pressed", String(b.dataset.band === band));
+    result.textContent = band === "all" ? "" : `Showing ${visible.length} of ${items.length} gifts`;
+  }
+
+  for (const b of G.PRICE_BANDS) {
+    options.append(G.el("button", { type: "button", class: "chip", "data-band": b.id, "aria-pressed": String(b.id === band), text: b.label,
+      onclick: () => { band = b.id; show(); } }));
+  }
+
+  // Count "Buy now" presses (anonymous; once per gift per day per browser).
+  function countClick(e) {
+    const link = e.target.closest?.("a.buy");
+    if (!link || (e.type === "auxclick" && e.button !== 1)) return;
+    const id = link.closest(".card")?.dataset.id;
+    if (!id) return;
+    const key = "clicked:" + id + ":" + new Date().toISOString().slice(0, 10);
+    try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch {}
+    const body = JSON.stringify({ id });
+    try {
+      if (!(navigator.sendBeacon && navigator.sendBeacon("/api/click", new Blob([body], { type: "text/plain" })))) {
+        fetch("/api/click", { method: "POST", body, keepalive: true }).catch(() => {});
+      }
+    } catch {}
+  }
+  shelves.addEventListener("click", countClick);
+  shelves.addEventListener("auxclick", countClick);
+
   G.renderBar(bar, []);
   G.renderSkeleton(shelves);
   try {
     const res = await fetch("/api/items");
     if (!res.ok) throw new Error();
-    const { items } = await res.json();
-    G.renderBar(bar, items);
-    G.renderShelves(shelves, items);
+    items = (await res.json()).items;
+    if (!items.some((it) => G.priceValue(it.price) != null)) document.getElementById("budget").hidden = true;
+    show();
     if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
   } catch {
     shelves.replaceChildren(G.el("p", { class: "notice", text: "The gift list didn't load. Refresh the page to try again." }));

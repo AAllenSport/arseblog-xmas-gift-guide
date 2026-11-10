@@ -106,7 +106,27 @@ try {
   assert.equal(r.status, 404);
   ok("delete works, and twice gives a clear 404");
 
-  for (const p of ["/", "/admin", "/assets/style.css", "/assets/cards.js", "/assets/admin.js"]) assert.equal((await fetch(base + p)).status, 200, p);
+  // Buy now click counting
+  const clickPost = (id, ua) => fetch(base + "/api/click", { method: "POST", headers: { "content-type": "text/plain", ...(ua ? { "user-agent": ua } : {}) }, body: JSON.stringify({ id }) });
+  assert.equal((await clickPost("example-wright-tee")).status, 204);
+  assert.equal((await clickPost("example-wright-tee")).status, 204);
+  assert.equal((await clickPost("not-a-gift")).status, 404);
+  assert.equal((await clickPost(scarf.id)).status, 404, "drafts aren't counted");
+  assert.equal((await clickPost("example-wright-tee", "Mozilla/5.0 (compatible; Googlebot/2.1)")).status, 204);
+  r = await call("GET", "/api/admin/clicks");
+  assert.equal(r.status, 401);
+  r = await call("GET", "/api/admin/clicks", null, auth);
+  assert.equal(r.json.counts["example-wright-tee"].total, 2, "bot click ignored");
+  assert.equal(r.json.counts["example-wright-tee"].today, 2);
+  assert.equal(r.json.counts["example-highbury-print"].total, 0);
+  ok("Buy now clicks are counted; bots, drafts and unknown gifts are ignored; counts are editors-only");
+
+  await Promise.all(Array.from({ length: 25 }, () => clickPost("example-highbury-print")));
+  r = await call("GET", "/api/admin/clicks", null, auth);
+  assert.equal(r.json.counts["example-highbury-print"].total, 25);
+  ok("25 simultaneous clicks are all counted");
+
+  for (const p of ["/", "/admin", "/assets/style.css", "/assets/cards.js", "/assets/admin.js", "/og-image.jpg"]) assert.equal((await fetch(base + p)).status, 200, p);
   assert.equal((await fetch(base + "/img/../../etc/passwd")).status, 404);
   ok("pages and assets are served; odd image paths are rejected");
 

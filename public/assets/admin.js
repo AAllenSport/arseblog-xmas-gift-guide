@@ -8,6 +8,7 @@
   let password = "";
   try { password = sessionStorage.getItem(KEY) || ""; } catch {}
   let items = [];
+  let clicks = null; // { id: { total, today, last7 } } once loaded
   let draft = null; // { id|null, images: [] } for the open form
 
   for (const sel of [$("addSection"), $("fSection")]) for (const s of G.SECTIONS) sel.append(el("option", { value: s.id, text: s.title }));
@@ -43,6 +44,34 @@
     try { sessionStorage.setItem(KEY, password); } catch {}
     $("loginView").hidden = true; $("appView").hidden = false; $("signOut").hidden = false;
     render();
+    loadClicks();
+  }
+
+  // ---------- Buy now clicks ----------
+  const fmt = (n) => Number(n || 0).toLocaleString("en-GB");
+  async function loadClicks() {
+    $("refreshClicks").disabled = true;
+    try { clicks = (await api("GET", "/api/admin/clicks")).counts; render(); }
+    catch (e) { $("clicksSummary").textContent = "Click counts didn't load: " + e.message; }
+    finally { $("refreshClicks").disabled = false; }
+  }
+  $("refreshClicks").addEventListener("click", loadClicks);
+
+  function renderClicksSummary() {
+    if (!clicks) return;
+    const rows = items.map((it) => ({ it, c: clicks[it.id] || { total: 0, today: 0, last7: 0 } }));
+    const sum = (k) => rows.reduce((a, r) => a + (r.c[k] || 0), 0);
+    const top = rows.filter((r) => r.c.total > 0).sort((a, b) => b.c.total - a.c.total).slice(0, 5);
+    $("clicksSummary").replaceChildren(
+      el("div", { class: "click-stats" },
+        el("div", {}, el("strong", { text: fmt(sum("total")) }), el("span", { text: "total" })),
+        el("div", {}, el("strong", { text: fmt(sum("last7")) }), el("span", { text: "last 7 days" })),
+        el("div", {}, el("strong", { text: fmt(sum("today")) }), el("span", { text: "today" }))),
+      top.length
+        ? el("ol", { class: "click-top" }, ...top.map((r) => el("li", {},
+            el("a", { href: "#" + r.it.section, text: r.it.name }),
+            el("span", { text: fmt(r.c.total) }))))
+        : el("p", { class: "hint", text: "No clicks yet. Counts appear here once readers start pressing Buy now." }));
   }
 
   $("loginForm").addEventListener("submit", async (e) => {
@@ -60,7 +89,11 @@
     const box = el("div", { class: "tools" });
     const list = G.sectionItems(items, it.section);
     const pos = list.findIndex((x) => x.id === it.id);
+    const c = clicks?.[it.id];
+    const count = clicks ? el("span", { class: "click-count", title: "Buy now clicks on the public guide",
+      text: `${fmt(c?.total)} ${c?.total === 1 ? "click" : "clicks"}` + (c?.today ? ` · ${fmt(c.today)} today` : "") }) : null;
     const normal = () => box.replaceChildren(
+      ...(count ? [count] : []),
       el("button", { type: "button", text: "Edit", onclick: () => openSheet(it) }),
       el("button", { type: "button", text: "↑", "aria-label": "Move earlier", disabled: pos <= 0, onclick: () => move(it, -1) }),
       el("button", { type: "button", text: "↓", "aria-label": "Move later", disabled: pos >= list.length - 1, onclick: () => move(it, 1) }),
@@ -77,6 +110,7 @@
   function render() {
     G.renderBar($("secbar"), items);
     G.renderShelves($("shelves"), items, { editing: true, tools, emptyText: "No gifts here yet. Paste a link above to add one." });
+    renderClicksSummary();
   }
 
   async function quickUpdate(it, fields) {

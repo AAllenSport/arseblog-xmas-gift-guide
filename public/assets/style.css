@@ -69,6 +69,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .secbar a:hover { border-color: var(--red); color: var(--red); }
 .secbar a .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 4px; }
 
+/* Budget filter */
+.budget { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; padding-block: 20px 0; }
+.budget-label { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.budget-options { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-family: var(--body); font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; font-variant-numeric: tabular-nums; }
+.chip:hover { border-color: var(--red); color: var(--red); }
+.chip[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: var(--on-red); }
+.budget-result { margin: 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.budget-result:empty { display: none; }
+
 /* Shelves */
 main { padding-block: 8px 64px; }
 .shelf { padding-top: 40px; scroll-margin-top: 64px; }
@@ -163,3 +173,20 @@ footer .disclosure { color: var(--ink); font-weight: 600; }
 .check { display: flex !important; align-items: center; gap: 8px; font-weight: 500 !important; }
 .check input { width: 18px; height: 18px; }
 .sheet .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; position: sticky; bottom: 0; background: var(--paper); padding-top: 10px; border-top: 1px solid var(--line); }
+
+/* Admin: Buy now clicks */
+.clicks-panel { border-bottom: 1px solid var(--line); }
+.clicks-panel .wrap { padding-block: 16px; display: grid; gap: 12px; }
+.clicks-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.btn.small { padding: 5px 12px; font-size: 13px; }
+#clicksSummary { display: flex; flex-wrap: wrap; gap: 16px 40px; align-items: flex-start; }
+.click-stats { display: flex; gap: 28px; }
+.click-stats div { display: grid; }
+.click-stats strong { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.click-stats span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.click-top { margin: 0; padding-left: 20px; display: grid; gap: 3px; min-width: 0; flex: 1 1 280px; font-size: 14px; }
+.click-top li { padding-left: 4px; }
+.click-top a { text-decoration: none; }
+.click-top a:hover { text-decoration: underline; }
+.click-top span { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 8px; }
+.tools .click-count { font-size: 12px; font-weight: 600; color: var(--ink); margin-right: auto; font-variant-numeric: tabular-nums; flex-basis: 100%; }

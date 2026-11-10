@@ -52,6 +52,18 @@ On each card in the admin page you can **Edit**, move it earlier or later (↑ �
 
 Most shops publish their product details for Google, which is what this reads. Shopify shops (Cult Kits, StavesArt and many independent makers) work especially well. A few big shops, **Amazon** in particular, block automatic reading. You'll see a yellow note saying so; the shop name and a rough product name are still filled in, and you add the photo and description yourself. For books, a Waterstones, Hatchards or Bookshop.org link usually works better than Amazon.
 
+### Buy now clicks
+
+The admin page shows how many times readers pressed **Buy now**: totals for all time, the last 7 days and today, a top-five list, and a count on each gift card. Press **Refresh** for the latest numbers. A click is counted once per gift per browser per day. It's anonymous (no cookies, no personal data), bots are ignored, and editors' own clicks on the public page count too.
+
+### Price filter
+
+Readers can filter the guide by budget: Any price, Under £15, £15–£40, £40 and up. It reads the number from each gift's Price field, so "£24.99" and "From £35" both work. Gifts with no price only appear under "Any price". To change the bands, edit `PRICE_BANDS` at the top of `public/assets/cards.js`.
+
+### Sharing image
+
+When the guide is shared on social media or in messaging apps, it shows `public/og-image.jpg` (1200 × 630): the crest on red with the title in Oswald. Sites can only fetch it once the site is public. If you add a custom domain, the sharing links switch to it automatically on the next deploy.
+
 ## 4. Changing the look and words
 
 | What | Where |
@@ -61,6 +73,8 @@ Most shops publish their product details for Google, which is what this reads. S
 | Crest | `public/assets/brand/crest.webp` and `crest.png` (made from the Arseblog shield PSD). Browser icons are `public/favicon*.png` and `apple-touch-icon.png` |
 | Heading, intro text, footer | `public/index.html` |
 | Section names and order | The `SECTIONS` list at the top of `public/assets/cards.js` |
+| Price filter bands | `PRICE_BANDS` at the top of `public/assets/cards.js` |
+| Sharing image | Replace `public/og-image.jpg` (1200 × 630) |
 | Example gifts loaded on first run | `netlify/lib/seed.mjs` (they only load once; after that, use the admin page) |
 
 Commit the change on GitHub and Netlify redeploys in about a minute.
@@ -89,6 +103,8 @@ netlify/functions/         server endpoints
   items.mjs                GET  /api/items            public list (edge cached, tag "gift-items")
   admin-items.mjs          GET/POST/PUT/DELETE/PATCH /api/admin/items
   fetch-product.mjs        POST /api/admin/fetch      link → card details
+  click.mjs                POST /api/click            count a Buy now press
+  admin-clicks.mjs         GET  /api/admin/clicks     click counts for editors
   upload.mjs               POST /api/admin/upload     editor photo upload
   img.mjs                  GET  /img/:key             stored photos
 netlify/lib/

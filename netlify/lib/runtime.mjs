@@ -1,6 +1,6 @@
 // Shared plumbing for the site's functions: settings, storage, auth, responses.
 import { timingSafeEqual, createHash } from "node:crypto";
-import { mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdir, readFile, writeFile, rm, rename } from "node:fs/promises";
 import path from "node:path";
 
 export function env(name) {
@@ -25,21 +25,44 @@ class FileStore {
       return buf.toString("utf8");
     } catch (e) { if (e.code === "ENOENT") return null; throw e; }
   }
-  async getWithMetadata(key, opts) {
-    const data = await this.get(key, opts);
-    if (data == null) return null;
+  async etagOf(key) {
+    try { return createHash("sha256").update(await readFile(this.file(key))).digest("hex").slice(0, 16); }
+    catch (e) { if (e.code === "ENOENT") return null; throw e; }
+  }
+  // Reads the value and its etag from one read, so they always match.
+  async getWithMetadata(key, { type } = {}) {
+    let buf;
+    try { buf = await readFile(this.file(key)); } catch (e) { if (e.code === "ENOENT") return null; throw e; }
+    const data = type === "json" ? JSON.parse(buf.toString("utf8"))
+      : type === "arrayBuffer" ? buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+      : buf.toString("utf8");
     let metadata = {};
     try { metadata = JSON.parse(await readFile(this.file(key) + ".meta", "utf8")); } catch {}
-    return { data, metadata };
+    return { data, metadata, etag: createHash("sha256").update(buf).digest("hex").slice(0, 16) };
   }
-  async set(key, value, { metadata } = {}) {
-    await mkdir(this.dir, { recursive: true });
-    const buf = value instanceof ArrayBuffer ? Buffer.from(value) : Buffer.isBuffer(value) ? value : Buffer.from(String(value));
-    await writeFile(this.file(key), buf);
-    if (metadata) await writeFile(this.file(key) + ".meta", JSON.stringify(metadata));
+  // Same rules as Netlify Blobs: onlyIfNew / onlyIfMatch writes return { modified: false } when they lose.
+  async set(key, value, { metadata, onlyIfNew, onlyIfMatch } = {}) {
+    const prev = (FileStore.locks.get(this.file(key)) || Promise.resolve());
+    let release;
+    const mine = new Promise((r) => (release = r));
+    FileStore.locks.set(this.file(key), prev.then(() => mine));
+    await prev;
+    try {
+      const current = await this.etagOf(key);
+      if (onlyIfNew && current !== null) return { modified: false };
+      if (onlyIfMatch !== undefined && current !== onlyIfMatch) return { modified: false };
+      await mkdir(this.dir, { recursive: true });
+      const buf = value instanceof ArrayBuffer ? Buffer.from(value) : Buffer.isBuffer(value) ? value : Buffer.from(String(value));
+      const tmp = this.file(key) + ".tmp-" + process.pid + "-" + Math.random().toString(36).slice(2);
+      await writeFile(tmp, buf);
+      await rename(tmp, this.file(key)); // atomic, so readers never see half a file
+      if (metadata) await writeFile(this.file(key) + ".meta", JSON.stringify(metadata));
+      return { modified: true, etag: await this.etagOf(key) };
+    } finally { release(); }
   }
-  async setJSON(key, value) { await this.set(key, JSON.stringify(value)); }
+  async setJSON(key, value, opts) { return this.set(key, JSON.stringify(value), opts); }
   async delete(key) { await rm(this.file(key), { force: true }); await rm(this.file(key) + ".meta", { force: true }); }
+  static locks = new Map();
 }
 
 let blobsModule;

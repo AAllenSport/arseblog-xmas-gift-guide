@@ -9,6 +9,28 @@
     { id: "stocking", title: "Stocking Fillers" },
   ];
 
+  // Price filter bands. "max" is inclusive. Change the numbers or labels here.
+  const PRICE_BANDS = [
+    { id: "all", label: "Any price" },
+    { id: "under-15", label: "Under £15", max: 14.99 },
+    { id: "15-40", label: "£15–£40", min: 15, max: 40 },
+    { id: "over-40", label: "£40 and up", min: 40.01 },
+  ];
+
+  // "£24.99", "From £35", "£1,250" -> a number. Gifts without a price show only under "Any price".
+  function priceValue(price) {
+    const m = String(price || "").replace(/,(?=\d{3})/g, "").match(/\d+(?:\.\d{1,2})?/);
+    return m ? parseFloat(m[0]) : null;
+  }
+
+  function inBand(it, bandId) {
+    const band = PRICE_BANDS.find((b) => b.id === bandId);
+    if (!band || band.id === "all") return true;
+    const v = priceValue(it.price);
+    if (v == null) return false;
+    return (band.min == null || v >= band.min) && (band.max == null || v <= band.max);
+  }
+
   function el(tag, attrs, ...kids) {
     const n = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs || {})) {
@@ -63,7 +85,7 @@
       el("div", { class: "foot" },
         el("span", { class: "price", text: it.price || "" }),
         href ? el("a", { class: "buy", href, target: "_blank", rel: "noopener", text: "Buy now →", "aria-label": `Buy ${it.name || "this gift"} at ${it.merchant || "the shop"}` }) : null));
-    const c = el("article", { class: "card" + (it.status && it.status !== "live" ? " draft" : "") }, media, body);
+    const c = el("article", { class: "card" + (it.status && it.status !== "live" ? " draft" : ""), "data-id": it.id }, media, body);
     if (opts.tools) c.append(opts.tools(it));
     return c;
   }
@@ -98,5 +120,5 @@
         el("div", { class: "media" }), el("div", { class: "body" }, el("div", { class: "line", style: "width:40%" }), el("div", { class: "line", style: "width:80%" }))))))));
   }
 
-  window.GiftGuide = { SECTIONS, el, safeUrl, card, sectionItems, renderBar, renderShelves, renderSkeleton };
+  window.GiftGuide = { SECTIONS, PRICE_BANDS, priceValue, inBand, el, safeUrl, card, sectionItems, renderBar, renderShelves, renderSkeleton };
 })();

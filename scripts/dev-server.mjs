@@ -63,7 +63,8 @@ http.createServer(async (req, res) => {
     let file = url.pathname === "/" ? "/index.html" : url.pathname === "/admin" ? "/admin.html" : url.pathname;
     file = path.join(root, "public", path.normalize(file).replace(/^(\.\.[/\\])+/, ""));
     if (!file.startsWith(path.join(root, "public"))) { res.writeHead(403); return res.end(); }
-    const data = await readFile(file);
+    let data = await readFile(file);
+    if (file.endsWith(".html")) data = Buffer.from(data.toString("utf8").replaceAll("%SITE_URL%", `http://localhost:${PORT}`));
     res.writeHead(200, { "content-type": TYPES[path.extname(file)] || "application/octet-stream" });
     res.end(data);
   } catch (e) {
