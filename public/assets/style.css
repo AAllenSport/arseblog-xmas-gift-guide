@@ -108,7 +108,9 @@ main { padding-block: 8px 64px; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 
 footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
-footer .wrap { padding-block: 24px; }
+footer .wrap { padding-block: 24px; display: grid; gap: 6px; }
+footer p { margin: 0; max-width: 72ch; }
+footer .disclosure { color: var(--ink); font-weight: 600; }
 
 /* ---------- Admin ---------- */
 .field { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius); padding: 9px 11px; width: 100%; }
