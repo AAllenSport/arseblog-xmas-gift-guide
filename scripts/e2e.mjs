@@ -96,6 +96,8 @@ try {
   assert.deepEqual(prints, [second.id, "example-highbury-print"]);
   ok("reordering a section changes the public order");
 
+  r = await call("PUT", `/api/admin/items?id=${second.id}`, { section: "blow-the-budget" }, auth);
+  assert.equal(r.status, 200, "Blow the Budget is a valid section");
   r = await call("PUT", `/api/admin/items?id=${second.id}`, { section: "books" }, auth);
   assert.equal(r.json.item.section, "books"); assert.equal(r.json.item.order, 2);
   ok("moving a gift to another section puts it at the end");

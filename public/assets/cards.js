@@ -7,6 +7,7 @@
     { id: "official", title: "Official Merch" },
     { id: "books", title: "Books / Magazines" },
     { id: "stocking", title: "Stocking Fillers" },
+    { id: "blow-the-budget", title: "Blow the Budget" },
   ];
 
   // Price filter bands. "max" is inclusive. Change the numbers or labels here.

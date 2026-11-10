@@ -1,6 +1,6 @@
 # Arseblog Christmas Gift Guide
 
-A small standalone website. The public page shows gift cards in five sections. The admin page lets editors paste a product link and get a finished card: name, photos, description, price and shop are read from the shop's page, then you check them and press Save.
+A small standalone website. The public page shows gift cards in six sections. The admin page lets editors paste a product link and get a finished card: name, photos, description, price and shop are read from the shop's page, then you check them and press Save.
 
 - Public guide: `https://YOUR-SITE/`
 - Admin: `https://YOUR-SITE/admin` (password protected)
@@ -72,7 +72,7 @@ When the guide is shared on social media or in messaging apps, it shows `public/
 | Fonts | Oswald (headings) and Open Sans (text), loaded from Google Fonts at the top of `index.html` and `admin.html`; set in `--display` and `--body` in `style.css` |
 | Crest | `public/assets/brand/crest.webp` and `crest.png` (made from the Arseblog shield PSD). Browser icons are `public/favicon*.png` and `apple-touch-icon.png` |
 | Heading, intro text, footer | `public/index.html` |
-| Section names and order | The `SECTIONS` list at the top of `public/assets/cards.js` |
+| Section names and order | The `SECTIONS` list at the top of `public/assets/cards.js`. To add a new section, also add its id to `SECTIONS` in `netlify/lib/parse-product.mjs` |
 | Price filter bands | `PRICE_BANDS` at the top of `public/assets/cards.js` |
 | Sharing image | Replace `public/og-image.jpg` (1200 × 630) |
 | Example gifts loaded on first run | `netlify/lib/seed.mjs` (they only load once; after that, use the admin page) |
