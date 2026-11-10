@@ -8,8 +8,8 @@
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   if (motion.matches) return;
 
-  const DENSITY = 0.00009;   // flakes per square pixel of header (about 90 on a laptop)
-  const MAX_FLAKES = 140;
+  const DENSITY = 0.00012;   // flakes per square pixel of header (about 120 on a laptop)
+  const MAX_FLAKES = 180;
 
   const canvas = document.createElement("canvas");
   canvas.className = "snow";
@@ -21,11 +21,11 @@
 
   const rand = (a, b) => a + Math.random() * (b - a);
   function makeFlake(anywhere) {
-    const r = rand(0.8, 2.6);                       // bigger flakes fall faster: a little depth
+    const r = rand(1.2, 3.6);                       // bigger flakes fall faster: a little depth
     return {
       x: rand(0, w), y: anywhere ? rand(0, h) : rand(-20, -4),
-      r, vy: 10 + r * 9, drift: rand(6, 16), phase: rand(0, Math.PI * 2), sway: rand(0.4, 1.1),
-      a: rand(0.35, 0.85),
+      r, vy: 8 + r * 8, drift: rand(6, 16), phase: rand(0, Math.PI * 2), sway: rand(0.4, 1.1),
+      a: rand(0.6, 0.95),
     };
   }
 
