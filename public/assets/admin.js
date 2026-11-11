@@ -193,7 +193,8 @@
       const d = await api("POST", "/api/admin/fetch", { url });
       const got = [];
       if (d.images.length) { draft.images = [...new Set([...draft.images, ...d.images])].slice(0, 6); drawThumbs(); got.push("photos"); }
-      if (d.price) { $("fPrice").value = d.price; got.push("price"); }
+      // Only replace the price with one we know is in pounds, so a hand-typed UK price is never overwritten by dollars.
+      if (d.price && (d.currency === "GBP" || !$("fPrice").value.trim())) { $("fPrice").value = d.price; got.push("price"); }
       if (d.description && !$("fDesc").value.trim()) { $("fDesc").value = d.description; got.push("description"); }
       if (d.name && !$("fName").value.trim()) { $("fName").value = d.name; got.push("name"); }
       if (d.merchant && !$("fMerchant").value.trim()) { $("fMerchant").value = d.merchant; got.push("shop"); }

@@ -59,12 +59,16 @@ test("Shopify .js JSON", () => {
   assert.equal(shopifyJsUrl("https://www.cultkits.com/collections/arsenal/products/ian-wright-arsenal-bootleg-tee?variant=1"),
     "https://www.cultkits.com/products/ian-wright-arsenal-bootleg-tee.js");
   assert.equal(shopifyJsUrl("https://www.hatchards.co.uk/book/x"), null);
-  const s = parseShopifyJs({ title: "Highbury", description: "<p>Pen and ink.</p>", images: ["//cdn.shopify.com/a.jpg", "//cdn.shopify.com/b.jpg"], price: 3500 }, "https://www.stavesart.com/products/highbury");
-  assert.deepEqual(s, { name: "Highbury", description: "Pen and ink.", images: ["https://cdn.shopify.com/a.jpg", "https://cdn.shopify.com/b.jpg"], price: "£35" });
+  const js = { title: "Highbury", description: "<p>Pen and ink.</p>", images: ["//cdn.shopify.com/a.jpg", "//cdn.shopify.com/b.jpg"], price: 3500 };
+  const s = parseShopifyJs(js, "https://www.stavesart.com/products/highbury", "GBP");
+  assert.deepEqual(s, { name: "Highbury", description: "Pen and ink.", images: ["https://cdn.shopify.com/a.jpg", "https://cdn.shopify.com/b.jpg"], price: "£35", currency: "GBP" });
+  assert.equal(parseShopifyJs(js, "https://x.com/products/a", "usd").price, "$35", "Shopify price uses the shop's currency");
+  assert.equal(parseShopifyJs(js, "https://x.com/products/a").price, "", "no currency, no price");
   const merged = mergeDetails({ name: "Highbury (2021)", description: "", images: ["https://cdn.shopify.com/a.jpg"], price: "", merchant: "StavesArt" }, s);
   assert.equal(merged.name, "Highbury (2021)");
   assert.equal(merged.images.length, 2);
   assert.equal(merged.price, "£35");
+  assert.equal(merged.currency, "GBP");
 });
 
 test("Helpers", () => {
@@ -77,4 +81,14 @@ test("Helpers", () => {
   const long = "First sentence is here. ".repeat(20);
   assert.ok(shortDescription(long).length <= 300);
   assert.ok(shortDescription(long).endsWith("."));
+});
+
+test("Currency is reported so the admin can flag non-pound prices", () => {
+  const usd = parseProduct(`<script type="application/ld+json">{"@type":"Product","name":"Cap","offers":{"price":"45.00","priceCurrency":"usd"}}</script>`, "https://madebymoji.shop/products/cap");
+  assert.equal(usd.price, "$45"); assert.equal(usd.currency, "USD");
+  const gbp = parseProduct(`<script type="application/ld+json">{"@type":"Product","name":"Tee","offers":{"price":"32","priceCurrency":"GBP"}}</script>`, "https://art-of.com/products/tee");
+  assert.equal(gbp.currency, "GBP");
+  const unknown = parseProduct(`<script type="application/ld+json">{"@type":"Product","name":"Mug","offers":{"price":"22"}}</script>`, "https://example.com/p/mug");
+  assert.equal(unknown.price, "£22"); assert.equal(unknown.currency, null);
+  assert.equal(parseProduct("<title>No price</title>", "https://example.com/x").currency, null);
 });

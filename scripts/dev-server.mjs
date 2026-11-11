@@ -24,7 +24,7 @@ for (const f of readdirSync(fnDir).filter((f) => f.endsWith(".mjs"))) {
 }
 
 // Optional pretend shop for automated tests (MOCK_SHOP=1)
-async function mockShop(pathname, res) {
+async function mockShop(pathname, res, req) {
   const dir = path.join(root, "test/fixtures");
   if (pathname === "/__shop/products/gunners-scarf") {
     res.writeHead(200, { "content-type": "text/html" });
@@ -39,14 +39,21 @@ async function mockShop(pathname, res) {
     return res.end(await readFile(path.join(dir, "pixel.png")));
   }
   if (pathname === "/__shop/blocked") { res.writeHead(403); return res.end("Forbidden"); }
+  // Behaves like a geo-pricing shop: dollars unless the request asks for the UK.
+  if (pathname === "/__shop/products/geo-tee" || pathname === "/__shop/products/dollar-tee") {
+    const uk = pathname.endsWith("geo-tee") && /localization=GB/.test(req.headers.cookie || "");
+    res.writeHead(200, { "content-type": "text/html" });
+    return res.end(`<script type="application/ld+json">{"@type":"Product","name":"Geo Tee","description":"A tee.","image":"/__shop/img/t.png","offers":{"price":"${uk ? "30.00" : "40.00"}","priceCurrency":"${uk ? "GBP" : "USD"}"}}</script>`);
+  }
   res.writeHead(404); res.end();
 }
 
 http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://localhost:${PORT}`);
-    if (process.env.MOCK_SHOP === "1" && url.pathname === "/products/gunners-scarf.js") return await mockShop("/__shop/products/gunners-scarf.js", res);
-    if (process.env.MOCK_SHOP === "1" && url.pathname.startsWith("/__shop/")) return await mockShop(url.pathname, res);
+    if (process.env.MOCK_SHOP === "1" && url.pathname === "/products/gunners-scarf.js") return await mockShop("/__shop/products/gunners-scarf.js", res, req);
+    if (process.env.MOCK_SHOP === "1" && url.pathname === "/cart.js") { res.writeHead(200, { "content-type": "application/json" }); return res.end(JSON.stringify({ currency: /cart_currency=GBP/.test(req.headers.cookie || "") ? "GBP" : "USD", items: [] })); }
+    if (process.env.MOCK_SHOP === "1" && url.pathname.startsWith("/__shop/")) return await mockShop(url.pathname, res, req);
 
     const route = routes.find((r) => r.pattern.test(url.pathname));
     if (route) {

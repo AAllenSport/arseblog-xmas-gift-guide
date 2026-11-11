@@ -117,9 +117,9 @@ export function checkPublicUrl(raw) {
   return u;
 }
 
-export async function fetchLimited(url, { accept, maxBytes, timeoutMs = 12000, referer } = {}) {
+export async function fetchLimited(url, { accept, maxBytes, timeoutMs = 12000, referer, headers } = {}) {
   const res = await fetch(url, {
-    headers: { ...BROWSER_HEADERS, accept: accept || "*/*", ...(referer ? { referer } : {}) },
+    headers: { ...BROWSER_HEADERS, accept: accept || "*/*", ...(referer ? { referer } : {}), ...(headers || {}) },
     redirect: "follow",
     signal: AbortSignal.timeout(timeoutMs),
   });

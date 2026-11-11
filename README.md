@@ -52,6 +52,10 @@ On each card in the admin page you can **Edit**, move it earlier or later (â†‘ â
 
 Most shops publish their product details for Google, which is what this reads. Shopify shops (Cult Kits, StavesArt and many independent makers) work especially well. A few big shops, **Amazon** in particular, block automatic reading. You'll see a yellow note saying so; the shop name and a rough product name are still filled in, and you add the photo and description yourself. For books, a Waterstones, Hatchards or Bookshop.org link usually works better than Amazon.
 
+### Prices in other currencies
+
+The site's server is in the US, so some shops show it US prices. When reading a page it asks for UK prices (this works for Shopify shops), and if a price still comes back in dollars, euros or anything else, a yellow note in the form tells you to check the UK price before saving. **Refresh from link** never replaces a price you've typed with a non-pound one.
+
 ### Buy now clicks
 
 The admin page shows how many times readers pressed **Buy now**: totals for all time, the last 7 days and today, a top-five list, and a count on each gift card. Press **Refresh** for the latest numbers. A click is counted once per gift per browser per day. It's anonymous (no cookies, no personal data), bots are ignored, and editors' own clicks on the public page count too.

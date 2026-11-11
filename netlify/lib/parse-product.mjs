@@ -188,16 +188,24 @@ export function parseProduct(html, url) {
     .map((u) => (/^http:\/\/(localhost|127\.)/i.test(u) ? u : u.replace(/^http:\/\//i, "https://"))))]
     .slice(0, 6);
 
-  const price = formatPrice(
-    offer?.price ?? meta["product:price:amount"] ?? meta["og:price:amount"],
-    offer?.currency ?? meta["product:price:currency"] ?? meta["og:price:currency"] ?? "GBP");
+  const amount = offer?.price ?? meta["product:price:amount"] ?? meta["og:price:amount"];
+  // null when the shop doesn't say; the fetcher flags that for a human to check.
+  const currency = String(offer?.currency ?? meta["product:price:currency"] ?? meta["og:price:currency"] ?? "").trim().toUpperCase() || null;
+  const price = formatPrice(amount, currency || "GBP");
 
   const merchant = siteName && siteName.length <= 40 ? siteName : merchantFromUrl(url);
 
-  return { name: name || nameFromUrl(url), description, images, price, merchant, url };
+  return { name: name || nameFromUrl(url), description, images, price, currency: price ? currency : null, merchant, url };
 }
 
 // Shopify stores expose /products/<handle>.js with clean product JSON.
+// Words for the admin's currency warning.
+export const CURRENCY_NAMES = { USD: "US dollars", EUR: "euros", CAD: "Canadian dollars", AUD: "Australian dollars", NZD: "New Zealand dollars", JPY: "Japanese yen", CHF: "Swiss francs", SEK: "Swedish kronor", DKK: "Danish kroner", NOK: "Norwegian kroner" };
+
+export function shopifyCartUrl(url) {
+  try { return new URL(url).origin + "/cart.js"; } catch { return null; }
+}
+
 export function shopifyJsUrl(url) {
   try {
     const u = new URL(url);
@@ -206,15 +214,20 @@ export function shopifyJsUrl(url) {
   } catch { return null; }
 }
 
-export function parseShopifyJs(json, url) {
+// Product JSON has no currency, so the fetcher passes it in (from the shop's /cart.js).
+// Without a currency we leave the price out rather than guess.
+export function parseShopifyJs(json, url, currency) {
   if (!json || typeof json !== "object" || !json.title) return null;
   const images = (json.images || []).map((i) => absolute(String(i).startsWith("//") ? "https:" + i : i, url)).filter(Boolean).slice(0, 6);
-  const pence = Number(json.price ?? json.price_min);
+  const minor = Number(json.price ?? json.price_min);
+  const cur = currency ? String(currency).toUpperCase() : null;
+  const price = cur && Number.isFinite(minor) && minor > 0 ? formatPrice(minor / 100, cur) : "";
   return {
     name: cleanText(json.title),
     description: shortDescription(json.description || ""),
     images,
-    price: Number.isFinite(pence) && pence > 0 ? formatPrice(pence / 100, "GBP") : "",
+    price,
+    currency: price ? cur : null,
   };
 }
 
@@ -227,5 +240,6 @@ export function mergeDetails(page, shop) {
     description: page.description || shop.description,
     images: [...new Set([...(page.images || []), ...(shop.images || [])])].slice(0, 6),
     price: page.price || shop.price,
+    currency: page.price ? page.currency : shop.currency,
   };
 }

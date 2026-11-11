@@ -50,6 +50,18 @@ try {
   const fetched = r.json;
   ok("link → name, price, shop, description and photos");
 
+  assert.equal(r.json.currency, "GBP");
+  assert.ok(!r.json.warnings.some((w) => /currency|dollars/i.test(w)), "no currency warning for pounds");
+
+  r = await call("POST", "/api/admin/fetch", { url: `${base}/__shop/products/geo-tee` }, auth);
+  assert.equal(r.json.price, "£30"); assert.equal(r.json.currency, "GBP");
+  ok("geo-pricing shop returns UK prices when asked for the UK");
+
+  r = await call("POST", "/api/admin/fetch", { url: `${base}/__shop/products/dollar-tee` }, auth);
+  assert.equal(r.json.price, "$40"); assert.equal(r.json.currency, "USD");
+  assert.ok(r.json.warnings.some((w) => /US dollars \(\$40\).*Check the UK price/.test(w)), JSON.stringify(r.json.warnings));
+  ok("a price in dollars comes with a clear warning to check the UK price");
+
   r = await call("POST", "/api/admin/fetch", { url: `${base}/__shop/blocked` }, auth);
   assert.equal(r.status, 200); assert.ok(r.json.warnings.some((w) => /Couldn't read the page/.test(w)));
   ok("blocked shop page gives a helpful warning instead of failing");
