@@ -1,13 +1,14 @@
 // Card and shelf rendering shared by the public guide and the admin page.
 (function () {
-  // Section ids and headings. To rename a heading, change the title here.
+  // Section ids and headings. "title" is the heading on the page; "short" is the
+  // label in the public section bar. To rename one, change it here.
   const SECTIONS = [
-    { id: "prints", title: "Prints / Posters / Art" },
-    { id: "bootleg", title: "Bootleg Merch" },
-    { id: "official", title: "Official Merch" },
-    { id: "books", title: "Books / Magazines" },
-    { id: "stocking", title: "Stocking Fillers" },
-    { id: "blow-the-budget", title: "Blow the Budget" },
+    { id: "prints", title: "Prints / Posters / Art", short: "Prints & Art" },
+    { id: "bootleg", title: "Bootleg Merch", short: "Bootleg" },
+    { id: "official", title: "Official Merch", short: "Official" },
+    { id: "books", title: "Books / Magazines", short: "Books & Mags" },
+    { id: "stocking", title: "Stocking Fillers", short: "Stocking Fillers" },
+    { id: "blow-the-budget", title: "Blow the Budget", short: "Blow the Budget" },
   ];
 
   // Price filter bands. "max" is inclusive. Change the numbers or labels here.
@@ -95,10 +96,11 @@
     return items.filter((i) => i.section === sec).sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
   }
 
-  function renderBar(container, items) {
+  // Section links. Counts are shown only when asked (the admin uses them).
+  function renderBar(container, items, opts = {}) {
     container.replaceChildren(...SECTIONS.map((s) => {
       const n = items.filter((i) => i.section === s.id).length;
-      return el("a", { href: "#" + s.id }, s.title, el("span", { class: "n", text: String(n) }));
+      return el("a", { href: "#" + s.id, title: opts.counts ? null : s.title }, opts.counts ? s.title : (s.short || s.title), opts.counts ? el("span", { class: "n", text: String(n) }) : null);
     }));
   }
 

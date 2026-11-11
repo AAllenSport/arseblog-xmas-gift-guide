@@ -35,19 +35,24 @@
       <picture><source srcset="/assets/brand/crest.webp" type="image/webp"><img class="crest" src="/assets/brand/crest.png" alt="Arseblog crest" width="410" height="480"></picture>
     </a>
     <div class="masthead-text">
-      <p class="brandline"><a href="https://arseblog.com">Arseblog</a><span aria-hidden="true">·</span><span>Christmas 2026</span><span class="countdown" id="countdown" hidden><span aria-hidden="true">·</span><span id="countdownText"></span></span></p>
+      <p class="brandline"><span>Christmas 2026</span><span class="countdown" id="countdown" hidden><span aria-hidden="true">·</span><span id="countdownText"></span></span></p>
       <h1>The Arseblog Christmas Gift Guide</h1>
       <p class="intro">With Christmas creeping up on us, the Arseblog team has rounded up some of our favourite Arsenal-themed gifts of 2026. From books and artwork to clothing and the sort of knick-knacks you never knew you needed, there should be something for the Gooner in your life. Even if that Gooner is you.</p>
-      <a class="rec-link" href="#recommend">Spotted something we've missed? Recommend a gift <span aria-hidden="true">→</span></a>
     </div>
   </div>
 </header>
-<nav class="secbar" aria-label="Gift sections"><div class="wrap" id="secbar"></div></nav>
-<div class="wrap budget" id="budget" role="group" aria-labelledby="budgetLabel">
-  <span class="budget-label" id="budgetLabel">Budget</span>
-  <div class="budget-options" id="budgetOptions"></div>
-  <p class="budget-result" id="budgetResult" aria-live="polite"></p>
-</div>
+<nav class="secbar" aria-label="Gift sections">
+  <div class="wrap bar">
+    <div class="sec-links" id="secbar"></div>
+    <div class="bar-tools">
+      <label class="budget-pick" id="budget"><span>Budget</span>
+        <select id="budgetSelect"></select>
+      </label>
+      <a class="bar-rec" href="#recommend">Recommend a gift</a>
+    </div>
+  </div>
+  <p class="wrap budget-result" id="budgetResult" aria-live="polite"></p>
+</nav>
 <main class="wrap" id="shelves"></main>
 <section class="recommend" id="recommend" aria-labelledby="recommendTitle">
   <div class="wrap">
@@ -87,7 +92,7 @@
   const G = window.GiftGuide;
   const shelves = document.getElementById("shelves");
   const bar = document.getElementById("secbar");
-  const options = document.getElementById("budgetOptions");
+  const select = document.getElementById("budgetSelect");
   const result = document.getElementById("budgetResult");
   let items = [];
   let band = "all";
@@ -96,13 +101,29 @@
     const visible = items.filter((it) => G.inBand(it, band));
     G.renderBar(bar, visible);
     G.renderShelves(shelves, visible, { emptyText: band === "all" ? "More picks landing soon." : "Nothing at this price in this section yet." });
-    for (const b of options.children) b.setAttribute("aria-pressed", String(b.dataset.band === band));
     result.textContent = band === "all" ? "" : `Showing ${visible.length} of ${items.length} gifts`;
+    watchSections();
   }
 
-  for (const b of G.PRICE_BANDS) {
-    options.append(G.el("button", { type: "button", class: "chip", "data-band": b.id, "aria-pressed": String(b.id === band), text: b.label,
-      onclick: () => { band = b.id; show(); } }));
+  for (const b of G.PRICE_BANDS) select.append(G.el("option", { value: b.id, text: b.label }));
+  select.addEventListener("change", () => { band = select.value; show(); });
+
+  // Underline the section you're looking at in the bar.
+  let spy;
+  function watchSections() {
+    spy?.disconnect();
+    if (!("IntersectionObserver" in window)) return;
+    const links = [...bar.querySelectorAll("a")];
+    spy = new IntersectionObserver((entries) => {
+      const seen = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (!seen) return;
+      for (const a of links) {
+        const on = a.hash === "#" + seen.target.id;
+        if (on) { a.setAttribute("aria-current", "true"); a.scrollIntoView({ block: "nearest", inline: "nearest" }); }
+        else a.removeAttribute("aria-current");
+      }
+    }, { rootMargin: "-120px 0px -60% 0px" });
+    shelves.querySelectorAll(".shelf").forEach((s) => spy.observe(s));
   }
 
   // Count "Buy now" presses (anonymous; once per gift per day per browser).

@@ -110,7 +110,7 @@
   }
 
   function render() {
-    G.renderBar($("secbar"), items);
+    G.renderBar($("secbar"), items, { counts: true });
     G.renderShelves($("shelves"), items, { editing: true, tools, emptyText: "No gifts here yet. Paste a link above to add one." });
     renderClicksSummary();
   }
