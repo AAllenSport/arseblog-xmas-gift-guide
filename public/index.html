@@ -59,8 +59,10 @@
       <label><span>Link to the gift</span><input class="field" id="recUrl" type="url" required placeholder="https://…" autocomplete="off"></label>
       <label><span>Why it's a good gift <span class="opt">(optional)</span></span><textarea class="field" id="recWhy" maxlength="280" rows="3" placeholder="A line or two is plenty."></textarea></label>
       <label><span>Your name <span class="opt">(optional, so we can credit you)</span></span><input class="field" id="recName" type="text" maxlength="60" autocomplete="name"></label>
+      <div class="hp" aria-hidden="true"><label>Leave this empty<input id="recWebsite" type="text" tabindex="-1" autocomplete="off"></label></div>
+      <p class="status" id="recStatus" role="status"></p>
       <div class="recommend-actions">
-        <button class="btn red" type="submit">Send recommendation</button>
+        <button class="btn red" type="submit" id="recSend">Send recommendation</button>
         <p class="hint">We don't publish recommendations automatically. Every link is checked first.</p>
       </div>
     </form>
@@ -78,6 +80,7 @@
 </footer>
 <script src="/assets/snow.js" defer></script>
 <script src="/assets/festive.js" defer></script>
+<script src="/assets/recommend.js" defer></script>
 <script src="/assets/cards.js"></script>
 <script>
 (async () => {

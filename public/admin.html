@@ -48,6 +48,17 @@
       <p class="status" id="addStatus" role="status"></p>
     </div>
   </section>
+  <section class="suggest-panel">
+    <div class="wrap">
+      <div class="suggest-head">
+        <p class="label">Reader suggestions</p>
+        <span class="count" id="suggestCount" hidden></span>
+        <button class="btn ghost small" type="button" id="refreshSuggest" style="margin-left:auto">Refresh</button>
+      </div>
+      <ul class="suggest-list" id="suggestList"><li class="hint">Loading suggestions…</li></ul>
+      <p class="hint">Readers send these from the form at the bottom of the guide. Nothing appears on the guide until you add it. <strong>Add to guide</strong> reads the shop page and opens the gift form for you to check, pick a section and save.</p>
+    </div>
+  </section>
   <section class="clicks-panel">
     <div class="wrap">
       <div class="clicks-head">
@@ -65,6 +76,7 @@
 <div class="scrim" id="scrim" hidden>
   <form class="sheet" id="sheet" aria-labelledby="sheetTitle" novalidate>
     <h2 id="sheetTitle">New gift</h2>
+    <p class="from-reader" id="sheetReader" hidden></p>
     <ul class="warnings" id="sheetWarnings" hidden></ul>
     <div class="link-row">
       <label>Product link<input class="field" id="fUrl" type="url" required></label>

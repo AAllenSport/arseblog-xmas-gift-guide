@@ -56,6 +56,15 @@ Most shops publish their product details for Google, which is what this reads. S
 
 The site's server is in the US, so some shops show it US prices. When reading a page it asks for UK prices (this works for Shopify shops), and if a price still comes back in dollars, euros or anything else, a yellow note in the form tells you to check the UK price before saving. **Refresh from link** never replaces a price you've typed with a non-pound one.
 
+### Reader suggestions
+
+Readers can recommend a gift from the form at the bottom of the guide (there's also a link in the header). Suggestions land in **Reader suggestions** on the admin page; nothing is published automatically.
+
+- **Add to guide** reads the shop page and opens the gift form with the reader's note at the top. Pick a section, check the details and save; the suggestion then leaves the inbox.
+- **Open link** lets you look first. **Dismiss** removes it.
+- Spam protection: a hidden field that only bots fill in, a limit of 10 suggestions per sender per day (worked out from a one-way scrambled version of their connection, so no addresses are stored), and links already in the guide or the inbox are quietly skipped.
+- Readers give an optional first name for credit; no email addresses are collected.
+
 ### Buy now clicks
 
 The admin page shows how many times readers pressed **Buy now**: totals for all time, the last 7 days and today, a top-five list, and a count on each gift card. Press **Refresh** for the latest numbers. A click is counted once per gift per browser per day. It's anonymous (no cookies, no personal data), bots are ignored, and editors' own clicks on the public page count too.
@@ -108,6 +117,8 @@ netlify/functions/         server endpoints
   admin-items.mjs          GET/POST/PUT/DELETE/PATCH /api/admin/items
   fetch-product.mjs        POST /api/admin/fetch      link → card details
   click.mjs                POST /api/click            count a Buy now press
+  suggest.mjs              POST /api/suggest          a reader recommends a gift
+  admin-suggestions.mjs    GET/DELETE /api/admin/suggestions  editors' suggestion inbox
   admin-clicks.mjs         GET  /api/admin/clicks     click counts for editors
   upload.mjs               POST /api/admin/upload     editor photo upload
   img.mjs                  GET  /img/:key             stored photos

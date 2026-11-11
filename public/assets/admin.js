@@ -9,6 +9,7 @@
   try { password = sessionStorage.getItem(KEY) || ""; } catch {}
   let items = [];
   let clicks = null; // { id: { total, today, last7 } } once loaded
+  let suggestions = [];
   let draft = null; // { id|null, images: [] } for the open form
 
   for (const sel of [$("addSection"), $("fSection")]) for (const s of G.SECTIONS) sel.append(el("option", { value: s.id, text: s.title }));
@@ -45,6 +46,7 @@
     $("loginView").hidden = true; $("appView").hidden = false; $("signOut").hidden = false;
     render();
     loadClicks();
+    loadSuggestions();
   }
 
   // ---------- Buy now clicks ----------
@@ -169,8 +171,11 @@
       i === 0 ? el("span", { class: "tag", text: "Cover" }) : null)));
   }
 
-  function openSheet(it, warnings, isNew) {
-    draft = { id: isNew ? null : it.id, images: [...(it.images || [])] };
+  function openSheet(it, warnings, isNew, suggestion) {
+    draft = { id: isNew ? null : it.id, images: [...(it.images || [])], suggestionId: suggestion?.id || null };
+    const note = $("sheetReader");
+    note.hidden = !suggestion;
+    if (suggestion) note.textContent = `Suggested by ${suggestion.name || "a reader"}` + (suggestion.why ? `: “${suggestion.why}”` : ".");
     $("sheetTitle").textContent = isNew ? "New gift" : "Edit gift";
     $("fUrl").value = it.url || ""; $("fName").value = it.name || ""; $("fMerchant").value = it.merchant || "";
     $("fPrice").value = it.price || ""; $("fSection").value = it.section || "prints"; $("fDesc").value = it.description || "";
@@ -262,7 +267,12 @@
         ? await api("PUT", "/api/admin/items?id=" + encodeURIComponent(draft.id), fields)
         : await api("POST", "/api/admin/items", fields);
       items = draft.id ? items.map((x) => (x.id === res.item.id ? res.item : x)) : [...items, res.item];
+      const fromSuggestion = draft.suggestionId;
       closeSheet(); render();
+      if (fromSuggestion) {
+        try { await api("DELETE", "/api/admin/suggestions?id=" + encodeURIComponent(fromSuggestion)); } catch {}
+        loadSuggestions();
+      }
       const msg = `Saved “${res.item.name}”${res.item.status === "live" ? ". It's on the guide now." : " as a draft."}`;
       setStatus($("addStatus"), res.warnings?.length ? msg + " " + res.warnings.join(" ") : msg, res.warnings?.length ? "" : "ok");
       if (!fields.url || fields.url === $("addUrl").value.trim()) $("addUrl").value = "";
@@ -270,6 +280,66 @@
     } catch (err) { setStatus($("sheetStatus"), err.message, "err"); }
     finally { $("saveBtn").disabled = false; }
   });
+
+  // ---------- Reader suggestions ----------
+  function ago(iso) {
+    const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (!(mins >= 0)) return "";
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins} min ago`;
+    const h = Math.round(mins / 60);
+    if (h < 24) return `${h} hour${h === 1 ? "" : "s"} ago`;
+    const d = Math.round(h / 24);
+    return d === 1 ? "yesterday" : `${d} days ago`;
+  }
+
+  async function loadSuggestions() {
+    try { suggestions = (await api("GET", "/api/admin/suggestions")).suggestions; renderSuggestions(); }
+    catch (e) { $("suggestList").replaceChildren(el("li", { class: "hint", text: "Suggestions didn't load: " + e.message })); }
+  }
+
+  function renderSuggestions() {
+    const n = suggestions.length;
+    $("suggestCount").textContent = `${n} new`;
+    $("suggestCount").hidden = !n;
+    if (!n) { $("suggestList").replaceChildren(el("li", { class: "hint", text: "No suggestions waiting. New ones from readers will appear here." })); return; }
+    $("suggestList").replaceChildren(...suggestions.map((sg) => {
+      const acts = el("div", { class: "acts" });
+      const normal = () => acts.replaceChildren(
+        el("button", { type: "button", class: "btn red small", text: "Add to guide", onclick: (e) => addFromSuggestion(sg, e.currentTarget) }),
+        el("a", { class: "btn ghost small", href: G.safeUrl(sg.url) || "#", target: "_blank", rel: "noopener noreferrer", text: "Open link ↗" }),
+        el("button", { type: "button", class: "btn ghost small", text: "Dismiss", onclick: () => acts.replaceChildren(
+          el("button", { type: "button", class: "btn ghost small", style: "color:var(--red);border-color:var(--red)", text: "Yes, dismiss", onclick: () => dismiss(sg) }),
+          el("button", { type: "button", class: "btn ghost small", text: "Keep", onclick: normal })) }));
+      normal();
+      return el("li", { class: "suggest" },
+        el("div", { class: "link" }, sg.title, el("small", { text: sg.shop })),
+        sg.why ? el("p", { class: "why", text: `“${sg.why}”` }) : null,
+        el("p", { class: "meta", text: `${sg.name ? "From " + sg.name : "No name given"} · ${ago(sg.createdAt)}` }),
+        acts);
+    }));
+  }
+
+  async function dismiss(sg) {
+    try { await api("DELETE", "/api/admin/suggestions?id=" + encodeURIComponent(sg.id)); }
+    catch (e) { setStatus($("addStatus"), e.message, "err"); }
+    loadSuggestions();
+  }
+
+  async function addFromSuggestion(sg, btn) {
+    if (items.some((i) => i.url === sg.url)) {
+      setStatus($("addStatus"), "That link is already in the guide, so I've cleared the suggestion.", "ok");
+      return dismiss(sg);
+    }
+    btn.disabled = true; btn.textContent = "Reading the shop page…";
+    try {
+      const d = await api("POST", "/api/admin/fetch", { url: sg.url });
+      openSheet({ url: sg.url, name: d.name, merchant: d.merchant, price: d.price, description: d.description, images: d.images, section: "prints", status: "draft" }, d.warnings, true, sg);
+      $("fSection").focus();
+    } catch (e) { setStatus($("addStatus"), e.message, "err"); }
+    finally { btn.disabled = false; btn.textContent = "Add to guide"; }
+  }
+  $("refreshSuggest").addEventListener("click", loadSuggestions);
 
   // Resume a session in this tab.
   if (password) enter().catch(() => signOut());

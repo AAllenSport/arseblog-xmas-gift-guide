@@ -140,7 +140,43 @@ try {
   assert.equal(r.json.counts["example-highbury-print"].total, 25);
   ok("25 simultaneous clicks are all counted");
 
-  for (const p of ["/", "/admin", "/assets/style.css", "/assets/cards.js", "/assets/admin.js", "/og-image.jpg"]) assert.equal((await fetch(base + p)).status, 200, p);
+  // Reader suggestions
+  const suggest = (b) => fetch(base + "/api/suggest", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(async (x) => ({ status: x.status, json: await x.json().catch(() => ({})) }));
+  r = await suggest({ url: "https://sockcouncil.com/product/arsenal-socks-bundle/", why: "Bruised   Banana socks.", name: "Sam" });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  r = await call("GET", "/api/admin/suggestions");
+  assert.equal(r.status, 401);
+  r = await call("GET", "/api/admin/suggestions", null, auth);
+  assert.equal(r.json.suggestions.length, 1);
+  const sg = r.json.suggestions[0];
+  assert.equal(sg.title, "Arsenal Socks Bundle"); assert.equal(sg.shop, "sockcouncil.com");
+  assert.equal(sg.why, "Bruised Banana socks."); assert.equal(sg.name, "Sam");
+  ok("a reader's suggestion lands in the editors' inbox, tidied, with a readable title");
+
+  assert.equal((await suggest({ url: "https://evil.example/x", website: "spam" })).status, 200);
+  assert.equal((await suggest({ url: "javascript:alert(1)" })).status, 400);
+  assert.equal((await suggest({ url: "https://www.cultkits.com/products/ian-wright-arsenal-bootleg-tee?utm=x" })).status, 200);
+  assert.equal((await suggest({ url: "https://sockcouncil.com/product/arsenal-socks-bundle" })).status, 200);
+  r = await call("GET", "/api/admin/suggestions", null, auth);
+  assert.equal(r.json.suggestions.length, 1, "bots, bad links, gifts already in the guide and repeats are not added");
+  ok("spam trap, bad links and duplicates are kept out of the inbox");
+
+  let limited = 0;
+  for (let n = 0; n < 12; n++) { const x = await suggest({ url: `https://shop.example/products/gift-${n}` }); if (x.status === 429) { limited++; assert.match(x.json.error, /try again tomorrow/); } }
+  assert.ok(limited > 0, "daily limit kicks in");
+  r = await call("GET", "/api/admin/suggestions", null, auth);
+  assert.equal(r.json.suggestions.length, 8, "10 a day per sender, counting the 3 earlier valid sends");
+  ok("one sender is limited to 10 suggestions a day");
+
+  r = await call("DELETE", `/api/admin/suggestions?id=${sg.id}`, null, auth);
+  assert.equal(r.status, 200);
+  r = await call("DELETE", `/api/admin/suggestions?id=${sg.id}`, null, auth);
+  assert.equal(r.status, 404);
+  r = await call("GET", "/api/admin/suggestions", null, auth);
+  assert.ok(!r.json.suggestions.some((x) => x.id === sg.id));
+  ok("editors can dismiss a suggestion");
+
+  for (const p of ["/", "/admin", "/assets/style.css", "/assets/cards.js", "/assets/admin.js", "/assets/recommend.js", "/og-image.jpg"]) assert.equal((await fetch(base + p)).status, 200, p);
   assert.equal((await fetch(base + "/img/../../etc/passwd")).status, 404);
   ok("pages and assets are served; odd image paths are rejected");
 
