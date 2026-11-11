@@ -198,3 +198,34 @@ footer .disclosure { color: var(--ink); font-weight: 600; }
 .click-top a:hover { text-decoration: underline; }
 .click-top span { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 8px; }
 .tools .click-count { font-size: 12px; font-weight: 600; color: var(--ink); margin-right: auto; font-variant-numeric: tabular-nums; flex-basis: 100%; }
+
+/* Recommend a gift */
+.recommend { background: var(--shelf); border-top: 1px solid var(--line); margin-top: 24px; }
+.recommend .wrap { padding-block: 40px 44px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px 56px; align-items: start; }
+.recommend h2 { margin: 0 0 8px; font-family: var(--display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); line-height: 1.05; text-transform: uppercase; text-wrap: balance; }
+.recommend-intro p { margin: 0; color: var(--muted); font-size: 16px; max-width: 40ch; }
+.recommend-form { display: grid; gap: 14px; }
+.recommend-form label { display: grid; gap: 5px; font-size: 13px; font-weight: 600; }
+.recommend-form .opt { font-weight: 400; color: var(--muted); }
+.recommend-form textarea { resize: vertical; min-height: 84px; }
+.recommend-actions { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; }
+.recommend-actions .hint { flex: 1 1 220px; }
+.recommend-done { display: grid; gap: 6px; padding: 18px 20px; background: var(--paper); border-left: 4px solid var(--ok); border-radius: var(--radius); }
+.recommend-done strong { font-family: var(--display); font-weight: 600; font-size: 22px; text-transform: uppercase; }
+.rec-link { justify-self: start; color: var(--on-red); font-weight: 600; font-size: 15px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.rec-link:hover { text-decoration-thickness: 2px; }
+@media (max-width: 760px) { .recommend .wrap { grid-template-columns: 1fr; } }
+
+/* Admin: reader suggestions */
+.suggest-panel { border-bottom: 1px solid var(--line); }
+.suggest-panel .wrap { padding-block: 16px; display: grid; gap: 12px; }
+.suggest-head { display: flex; align-items: center; gap: 10px; }
+.suggest-head .count { background: var(--red); color: var(--on-red); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 9px; font-variant-numeric: tabular-nums; }
+.suggest-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.suggest { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+.suggest .link { font-weight: 600; overflow-wrap: anywhere; }
+.suggest .link small { display: block; font-weight: 400; color: var(--muted); }
+.suggest .why { margin: 0; font-size: 14px; grid-column: 1; }
+.suggest .meta { margin: 0; font-size: 12px; color: var(--muted); grid-column: 1; }
+.suggest .acts { grid-column: 2; grid-row: 1 / span 3; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 600px) { .suggest { grid-template-columns: 1fr; } .suggest .acts { grid-column: 1; grid-row: auto; justify-content: flex-start; } }
