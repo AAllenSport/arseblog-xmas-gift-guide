@@ -8,8 +8,10 @@
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   if (motion.matches) return;
 
-  // "ermine" for falling Arseblog ermine spots, "snow" for plain snowflakes.
-  const STYLE = "ermine";
+  // "snow" for plain snowflakes, "ermine" for falling Arseblog ermine spots,
+  // "mix" for snow with the odd ermine drifting through it.
+  const STYLE = "mix";
+  const ERMINE_SHARE = 0.12;  // in "mix", roughly 1 in 8 is an ermine
   const DENSITY = STYLE === "ermine" ? 0.00004 : 0.00012; // per square pixel of header (~40 ermine or ~120 flakes on a laptop)
   const MAX_FLAKES = STYLE === "ermine" ? 50 : 180;
 
@@ -36,11 +38,12 @@
   const rand = (a, b) => a + Math.random() * (b - a);
   function makeFlake(anywhere) {
     // r is the size: a radius for snow, half the height for an ermine. Bigger ones fall faster: a little depth.
-    const r = STYLE === "ermine" ? rand(9, 18) : rand(1.2, 3.6);
+    const ermine = STYLE === "ermine" || (STYLE === "mix" && Math.random() < ERMINE_SHARE);
+    const r = ermine ? rand(9, 18) : rand(1.2, 3.6);
     return {
-      x: rand(0, w), y: anywhere ? rand(0, h) : rand(-40, -2 * r),
-      r, vy: STYLE === "ermine" ? 10 + r * 1.6 : 8 + r * 8, drift: rand(6, 16), phase: rand(0, Math.PI * 2), sway: rand(0.4, 1.1),
-      a: STYLE === "ermine" ? rand(0.5, 0.9) : rand(0.6, 0.95),
+      ermine, x: rand(0, w), y: anywhere ? rand(0, h) : rand(-40, -2 * r),
+      r, vy: ermine ? 10 + r * 1.6 : 8 + r * 8, drift: rand(6, 16), phase: rand(0, Math.PI * 2), sway: rand(0.4, 1.1),
+      a: ermine ? rand(0.5, 0.9) : rand(0.6, 0.95),
       tilt: rand(0.15, 0.35),
     };
   }
@@ -68,7 +71,7 @@
       if (f.y - f.r > h) Object.assign(f, makeFlake(false));
       if (f.x < -2 * f.r) f.x = w + 2 * f.r; else if (f.x > w + 2 * f.r) f.x = -2 * f.r;
       ctx.globalAlpha = f.a;
-      if (STYLE === "ermine") {
+      if (f.ermine) {
         // Rocks gently from side to side as it drifts.
         const s = (2 * f.r) / 150;
         ctx.save();
