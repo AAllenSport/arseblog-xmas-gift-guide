@@ -1,4 +1,4 @@
-// Light snowfall behind the header text.
+// Falling Arseblog ermine (or plain snow) behind the header text.
 // - Off for readers who've asked for reduced motion
 // - Pauses when the header is off-screen or the tab is hidden
 // - To turn it off for good, delete the <script src="/assets/snow.js"> line in index.html
@@ -8,8 +8,22 @@
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   if (motion.matches) return;
 
-  const DENSITY = 0.00012;   // flakes per square pixel of header (about 120 on a laptop)
-  const MAX_FLAKES = 180;
+  // "ermine" for falling Arseblog ermine spots, "snow" for plain snowflakes.
+  const STYLE = "ermine";
+  const DENSITY = STYLE === "ermine" ? 0.00004 : 0.00012; // per square pixel of header (~40 ermine or ~120 flakes on a laptop)
+  const MAX_FLAKES = STYLE === "ermine" ? 50 : 180;
+
+  // The ermine spot from the Arseblog brand, drawn in a 100 x 150 box (three dots over a tail).
+  const ERMINE = new Path2D();
+  ERMINE.arc(50, 14, 14.5, 0, Math.PI * 2); ERMINE.closePath();
+  ERMINE.moveTo(33.5, 44); ERMINE.arc(19, 44, 14.5, 0, Math.PI * 2); ERMINE.closePath();
+  ERMINE.moveTo(95.5, 44); ERMINE.arc(81, 44, 14.5, 0, Math.PI * 2); ERMINE.closePath();
+  ERMINE.moveTo(50, 38);
+  ERMINE.bezierCurveTo(42, 66, 34, 98, 10, 114);
+  ERMINE.quadraticCurveTo(34, 107, 41, 118);
+  ERMINE.lineTo(50, 144); ERMINE.lineTo(59, 118);
+  ERMINE.quadraticCurveTo(66, 107, 90, 114);
+  ERMINE.bezierCurveTo(66, 98, 58, 66, 50, 38); ERMINE.closePath();
 
   const canvas = document.createElement("canvas");
   canvas.className = "snow";
@@ -21,11 +35,13 @@
 
   const rand = (a, b) => a + Math.random() * (b - a);
   function makeFlake(anywhere) {
-    const r = rand(1.2, 3.6);                       // bigger flakes fall faster: a little depth
+    // r is the size: a radius for snow, half the height for an ermine. Bigger ones fall faster: a little depth.
+    const r = STYLE === "ermine" ? rand(9, 18) : rand(1.2, 3.6);
     return {
-      x: rand(0, w), y: anywhere ? rand(0, h) : rand(-20, -4),
-      r, vy: 8 + r * 8, drift: rand(6, 16), phase: rand(0, Math.PI * 2), sway: rand(0.4, 1.1),
-      a: rand(0.6, 0.95),
+      x: rand(0, w), y: anywhere ? rand(0, h) : rand(-40, -2 * r),
+      r, vy: STYLE === "ermine" ? 10 + r * 1.6 : 8 + r * 8, drift: rand(6, 16), phase: rand(0, Math.PI * 2), sway: rand(0.4, 1.1),
+      a: STYLE === "ermine" ? rand(0.5, 0.9) : rand(0.6, 0.95),
+      tilt: rand(0.15, 0.35),
     };
   }
 
@@ -50,11 +66,23 @@
       f.y += f.vy * dt;
       f.x += Math.sin(f.phase) * f.drift * dt;
       if (f.y - f.r > h) Object.assign(f, makeFlake(false));
-      if (f.x < -5) f.x = w + 5; else if (f.x > w + 5) f.x = -5;
+      if (f.x < -2 * f.r) f.x = w + 2 * f.r; else if (f.x > w + 2 * f.r) f.x = -2 * f.r;
       ctx.globalAlpha = f.a;
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-      ctx.fill();
+      if (STYLE === "ermine") {
+        // Rocks gently from side to side as it drifts.
+        const s = (2 * f.r) / 150;
+        ctx.save();
+        ctx.translate(f.x, f.y);
+        ctx.rotate(Math.sin(f.phase) * f.tilt);
+        ctx.scale(s, s);
+        ctx.translate(-50, -80);
+        ctx.fill(ERMINE);
+        ctx.restore();
+      } else {
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     ctx.globalAlpha = 1;
     raf = requestAnimationFrame(frame);
