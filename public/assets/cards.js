@@ -1,13 +1,15 @@
 // Card and shelf rendering shared by the public guide and the admin page.
 (function () {
   // Section ids and headings. "title" is the heading on the page; "short" is the
-  // label in the public section bar. To rename one, change it here.
+  // label in the public section bar. To rename one, change it here; the order
+  // here is the order on the page. (The "bootleg" id is kept so existing gifts
+  // stay put; only the visible title changed.)
   const SECTIONS = [
-    { id: "prints", title: "Prints / Posters / Art", short: "Prints & Art" },
-    { id: "bootleg", title: "Bootleg Merch", short: "Bootleg" },
-    { id: "official", title: "Official Merch", short: "Official" },
-    { id: "books", title: "Books / Magazines", short: "Books & Mags" },
     { id: "stocking", title: "Stocking Fillers", short: "Stocking Fillers" },
+    { id: "prints", title: "Prints / Posters / Art", short: "Prints & Art" },
+    { id: "books", title: "Books / Magazines", short: "Books & Mags" },
+    { id: "bootleg", title: "Independent Merch", short: "Independent" },
+    { id: "official", title: "Official Merch", short: "Official" },
     { id: "blow-the-budget", title: "Blow the Budget", short: "Blow the Budget" },
   ];
 

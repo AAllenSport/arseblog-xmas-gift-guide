@@ -47,7 +47,7 @@ export function cleanInput(input, { partial = false } = {}) {
     out.url = u.href;
   }
   if (!partial || has("section")) {
-    if (!SECTIONS.includes(input?.section)) return { error: "Choose one of the five sections." };
+    if (!SECTIONS.includes(input?.section)) return { error: "Choose one of the sections." };
     out.section = input.section;
   }
   if (!partial || has("name")) {

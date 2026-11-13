@@ -3,7 +3,7 @@
 // Open Graph / Twitter meta tags, then the page title and meta description.
 import { parse } from "node-html-parser";
 
-export const SECTIONS = ["prints", "bootleg", "official", "books", "stocking", "blow-the-budget"];
+export const SECTIONS = ["stocking", "prints", "books", "bootleg", "official", "blow-the-budget"];
 
 const MERCHANTS = {
   "cultkits.com": "Cult Kits",
